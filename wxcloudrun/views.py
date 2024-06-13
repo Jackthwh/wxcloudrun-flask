@@ -73,7 +73,7 @@ def reply_msg():
     """
     try:
         webData = request.data # Note: empty when body is a form
-        print(f"post data: {webData}")
+        app.logger.info(f"post data: {webData}")
         recMsg = receive.parse_xml(webData)
         if isinstance(recMsg, receive.Msg):
             toUser = recMsg.FromUserName
@@ -99,12 +99,12 @@ def reply_msg():
             replyMsg = reply.TextMsg(toUser, fromUser, content)
             msg = replyMsg.send()
         else:
-            print("暂且不处理")
+            app.logger.info("暂且不处理")
             msg = reply.Msg().send()
 
         return make_msg_response(msg)
     except Exception as e:
-        print(e)
+        app.logger.error(e)
         return make_text_response("system error!")
 
 @app.route('/wx', methods=['GET'])
@@ -125,12 +125,12 @@ def get_wx():
         for s in li:
             sha1.update(s.encode('utf-8'))
         hashcode = sha1.hexdigest()
-        print("handle/GET func: hashcode, signature: ", hashcode, signature)
+        app.logger.info("handle/GET func: hashcode, signature: ", hashcode, signature)
         msg = ''
         if hashcode == signature:
             msg = echostr
         return make_text_response(msg)
 
     except Exception as e:
-        print(e)
+        app.logger.error(e)
         return make_text_response("system error!")
