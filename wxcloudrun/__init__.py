@@ -1,6 +1,6 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-import pymysql
+from flask_sqlalchemy import SQLAlchemy # type: ignore
+import pymysql # type: ignore
 import config
 
 # 因MySQLDB不支持Python3，使用pymysql扩展库代替MySQLDB库
@@ -18,7 +18,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{}:{}@{}/flask_demo'.format(con
 db = SQLAlchemy(app)
 
 # 加载控制器
-from wxcloudrun import views
+from wxcloudrun import views  # noqa: E402, F401
 
 # 加载配置
 app.config.from_object('config')
