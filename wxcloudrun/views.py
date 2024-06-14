@@ -110,13 +110,13 @@ def reply_msg():
 @app.route('/wx', methods=['GET'])
 def get_wx():
     try:
-        data = request.args()
+        data = request.args
         if len(data) == 0:
             return make_text_response('hello, this is handle view')
-        signature = data.signature
-        timestamp = data.timestamp
-        nonce = data.nonce
-        echostr = data.echostr
+        signature = data['signature']
+        timestamp = data['timestamp']
+        nonce = data['nonce']
+        echostr = data['echostr']
         token = config.wx_token
 
         li = [token, timestamp, nonce]
