@@ -1,12 +1,19 @@
 from datetime import datetime
 import hashlib
-from flask import render_template, request
-from run import app
-from wxcloudrun.dao import delete_counterbyid, query_counterbyid, insert_counter, update_counterbyid
-from wxcloudrun.model import Counters
+from flask import render_template, request, g
+from wxcloudrun import app
+from wxcloudrun.dao import delete_counterbyid, insert_demo, query_counterbyid, insert_counter, query_demobyuser, update_counterbyid, update_demobyuser
+from wxcloudrun.inbrace import Inbrace
+from wxcloudrun.model import Counters, Demos
 from wxcloudrun.response import make_succ_empty_response, make_succ_response, make_err_response, make_msg_response, make_text_response
 from wxcloudrun import receive, reply
 import config
+
+INBRACE_MSG = "inbrace"
+
+GREETING = """
+    欢迎访问智慧泉源公众号！我们从事AI应用开发、设计和咨询。就您关心的任何问题，敬请留言。我们会尽快给你回复。
+"""
 
 @app.route('/')
 def index():
@@ -69,8 +76,6 @@ def get_count():
 
 @app.route('/wx', methods=['POST'])
 def reply_msg():
-    """
-    """
     try:
         webData = request.data # Note: empty when body is a form
         app.logger.info(f"post data: {webData}")
@@ -79,13 +84,36 @@ def reply_msg():
             toUser = recMsg.FromUserName
             fromUser = recMsg.ToUserName
             if recMsg.MsgType == 'text':
-                content = "test"
+                tip = "你可以发送new开始一轮新对话，或者一张之前咨询过的图片来继续上一次的对话。"
+                demo = query_demobyuser(fromUser)
+                if recMsg.Content == INBRACE_MSG:
+                    if not demo:
+                        demo = Demos()
+                        demo.user = fromUser
+                        demo.demo = INBRACE_MSG
+                        insert_demo(demo)
+                    elif demo.demo != INBRACE_MSG:
+                        demo.demo = INBRACE_MSG
+                        demo.thread_id = ''
+                        update_demobyuser(demo)
+                        content = "欢迎来到Inbrace演示！" + tip
+                    else:
+                        content = "Inbrace演示进行中……" + tip
+                else:
+                    if demo and demo.demo == INBRACE_MSG:
+                        content = Inbrace().handle(recMsg)
+                    else:
+                        content = GREETING
+
                 replyMsg = reply.TextMsg(toUser, fromUser, content)
                 msg = replyMsg.send()
             elif recMsg.MsgType == 'image':
-                mediaId = recMsg.MediaId
-                replyMsg = reply.ImageMsg(toUser, fromUser, mediaId)
-                msg = replyMsg.send()
+                demo = query_demobyuser(fromUser)
+                if demo and demo.demo == INBRACE_MSG:
+                    content = Inbrace().handle(recMsg)
+                else:
+                    content = GREETING
+                replyMsg = reply.TextMsg(toUser, fromUser, content)
             else:
                 msg = reply.Msg().send()
         elif isinstance(recMsg, receive.EventMsg):

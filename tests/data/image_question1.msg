@@ -1,0 +1,9 @@
+<xml>
+    <ToUserName><![CDATA[智慧泉源科技]]></ToUserName>
+    <FromUserName><![CDATA[Jack]]></FromUserName>
+    <CreateTime>1718335908</CreateTime>
+    <MsgType><![CDATA[image]]></MsgType>
+    <MsgId>12345678</MsgId>
+    <PicUrl>http://fake.com/a</PicUrl>
+    <MediaId>1AmxZuHw5lRlem4Uzq32vaNcNXqgNAFivBtAswc0nE-yh6Sn7XSL1v3kO6FGhXFZ</MediaId>
+</xml>
