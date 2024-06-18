@@ -29,7 +29,7 @@
 		"CREATE DATABASE IF NOT EXISTS flask_demo;",
 		"USE flask_demo;",
 		"CREATE TABLE IF NOT EXISTS `Counters` (`id` int(11) NOT NULL AUTO_INCREMENT, `count` int(11) NOT NULL DEFAULT 1, `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARSET = utf8;",
-		"CREATE TABLE IF NOT EXISTS `Demos` (`id` int(11) NOT NULL AUTO_INCREMENT, `user` varchar(256) NOT NULL, `demo` varchar(256) NOT NULL, `thread_id` varchar(256), `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARSET = utf8;",
+		"CREATE TABLE IF NOT EXISTS `Demos` (`id` int(11) NOT NULL AUTO_INCREMENT, `user` varchar(256) NOT NULL, `demo` varchar(256) NOT NULL, `thread_id` varchar(256), `running` int(2), `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARSET = utf8;",
 		"CREATE TABLE IF NOT EXISTS `AccessToken` (`id` int(11) NOT NULL AUTO_INCREMENT, `token` varchar(256) NOT NULL, `expire_at` int NOT NULL, `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`)) ENGINE = InnoDB DEFAULT CHARSET = utf8;"
 	]
 }

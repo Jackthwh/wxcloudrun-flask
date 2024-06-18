@@ -125,6 +125,16 @@ def update_thread_id_of_demo(user, thread_id):
         logger.error("update_thread_id_of_demo errorMsg= {} ".format(e))
         raise e
 
+def update_running_of_demo(user, running):
+    try:
+        demo = query_demobyuser(user)
+        # assert demo is not None
+        demo.running = running
+        update_demobyuser(demo)
+    except OperationalError as e:
+        logger.error("update_running_of_demo errorMsg= {} ".format(e))
+        raise e
+
 # AccessToken table
 
 def query_accesstoken():

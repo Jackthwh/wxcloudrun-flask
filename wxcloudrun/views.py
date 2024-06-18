@@ -102,24 +102,24 @@ def reply_msg():
                         content = "欢迎来到Inbrace演示！" + tip
                     else:
                         content = "Inbrace演示进行中……" + tip
+                    return make_resp_msg(toUser, fromUser, content)
                 else:
                     if demo and demo.demo == INBRACE_MSG:
-                        Inbrace(demo).handle(recMsg)
                         content = Inbrace(demo).handle(recMsg)
                     else:
                         content = GREETING
+                    return make_resp_msg(toUser, fromUser, content)
 
-                replyMsg = reply.TextMsg(toUser, fromUser, content)
-                msg = replyMsg.send()
             elif recMsg.MsgType == 'image':
                 demo = query_demobyuser(toUser)
                 if demo and demo.demo == INBRACE_MSG:
                     content = Inbrace(demo).handle(recMsg)
                 else:
                     content = GREETING
-                replyMsg = reply.TextMsg(toUser, fromUser, content)
+                return make_resp_msg(toUser, fromUser, content)
             else:
-                msg = reply.Msg().send()
+                return make_resp_msg(toUser, fromUser)
+
         elif isinstance(recMsg, receive.EventMsg):
             toUser = recMsg.FromUserName
             fromUser = recMsg.ToUserName
@@ -128,17 +128,15 @@ def reply_msg():
                 if recMsg.Eventkey == 'mpGuide':
                     content = u"编写中，尚未完成".encode('utf-8')
 
-            replyMsg = reply.TextMsg(toUser, fromUser, content)
-            msg = replyMsg.send()
+            return make_resp_msg(toUser, fromUser, content)
         else:
             app.logger.info("暂且不处理")
-            msg = reply.Msg().send()
+            return make_resp_msg(toUser, fromUser)
 
-        return make_msg_response(msg)
     except Exception as e:
         app.logger.error(e)
         app.logger.error(traceback.format_exc())
-        return make_text_response("system error!")
+        return make_resp_msg(toUser, fromUser, "system error!")
 
 @app.route('/wx', methods=['GET'])
 def get_wx():
@@ -167,3 +165,8 @@ def get_wx():
     except Exception as e:
         app.logger.error(e)
         return make_text_response("system error!")
+
+def make_resp_msg(toUser, fromUser, content="success"):
+    replyMsg = reply.TextMsg(toUser, fromUser, content)
+    msg = replyMsg.send()
+    return make_text_response(msg)
