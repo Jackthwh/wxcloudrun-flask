@@ -74,9 +74,9 @@ class OpenAIClient():
     def encode_image(image_content):
         return base64.b64encode(image_content).decode('utf-8')
 
-    def append_image_msg(self, thread, image_content):
+    def append_image_msg(self, thread, image_content, image_type):
         message_file = self.__client.files.create(
-            file=(str(uuid.uuid4()) + '.png', io.BytesIO(image_content)), purpose="vision"
+            file=(str(uuid.uuid4()) + '.' + image_type, io.BytesIO(image_content)), purpose="vision"
         )
         # url = f"data:image/png;base64,{OpenAIClient.encode_image(image_content)}"
         self.__client.beta.threads.messages.create(

@@ -34,5 +34,6 @@ class Media(object):
         if ('Content-Type' in headers and (headers['Content-Type'] == 'application/json' or headers['Content-Type'] == 'text/plain')):
             pprint(urlResp.json())
         else:
+            _, _, image_type = headers['Content-Type'].partition('/')
             buffer = urlResp.content  # 素材的二进制
-            return buffer
+            return buffer, image_type

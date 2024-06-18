@@ -5,5 +5,5 @@
     <MsgType><![CDATA[image]]></MsgType>
     <MsgId>1234567</MsgId>
     <PicUrl>http://fake.com/a</PicUrl>
-    <MediaId>123</MediaId>
+    <MediaId>1AmxZuHw5lRlem4Uzq32vaNcNXqgNAFivBtAswc0nE-yh6Sn7XSL1v3kO6FGhXFZ</MediaId>
 </xml>

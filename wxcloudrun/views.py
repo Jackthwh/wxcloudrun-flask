@@ -1,4 +1,5 @@
 from datetime import datetime
+import traceback
 import hashlib
 from flask import render_template, request, g
 from wxcloudrun import app
@@ -85,13 +86,15 @@ def reply_msg():
             fromUser = recMsg.ToUserName
             if recMsg.MsgType == 'text':
                 tip = "你可以发送new开始一轮新对话，或者一张之前咨询过的图片来继续上一次的对话。"
-                demo = query_demobyuser(fromUser)
+                demo = query_demobyuser(toUser)
+                content = ""
                 if recMsg.Content == INBRACE_MSG:
                     if not demo:
                         demo = Demos()
-                        demo.user = fromUser
+                        demo.user = toUser
                         demo.demo = INBRACE_MSG
                         insert_demo(demo)
+                        content = "欢迎来到Inbrace演示！" + tip
                     elif demo.demo != INBRACE_MSG:
                         demo.demo = INBRACE_MSG
                         demo.thread_id = ''
@@ -101,16 +104,16 @@ def reply_msg():
                         content = "Inbrace演示进行中……" + tip
                 else:
                     if demo and demo.demo == INBRACE_MSG:
-                        content = Inbrace().handle(recMsg)
+                        content = Inbrace(demo).handle(recMsg)
                     else:
                         content = GREETING
 
                 replyMsg = reply.TextMsg(toUser, fromUser, content)
                 msg = replyMsg.send()
             elif recMsg.MsgType == 'image':
-                demo = query_demobyuser(fromUser)
+                demo = query_demobyuser(toUser)
                 if demo and demo.demo == INBRACE_MSG:
-                    content = Inbrace().handle(recMsg)
+                    content = Inbrace(demo).handle(recMsg)
                 else:
                     content = GREETING
                 replyMsg = reply.TextMsg(toUser, fromUser, content)
@@ -133,6 +136,7 @@ def reply_msg():
         return make_msg_response(msg)
     except Exception as e:
         app.logger.error(e)
+        app.logger.error(traceback.format_exc())
         return make_text_response("system error!")
 
 @app.route('/wx', methods=['GET'])

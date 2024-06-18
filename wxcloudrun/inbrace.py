@@ -39,9 +39,9 @@ class Inbrace():
         elif recMsg.MsgType == "image":
             if self.__current_thread:
                 accessToken = AccessTokenHelper().sync_db().get_access_token()
+                buffer, image_type = Media().get(accessToken=accessToken, mediaId=recMsg.MediaId)
                 self.__open_ai.append_image_msg(
-                    self.__current_thread,
-                    Media().get(accessToken=accessToken, mediaId=recMsg.MediaId),
+                    self.__current_thread, buffer, image_type
                 )
                 return "" # waiting for text msg
             else:

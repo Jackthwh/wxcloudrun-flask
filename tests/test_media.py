@@ -10,6 +10,6 @@ def test_media_upload():
 
 def test_media_download():
     accessToken = AccessTokenHelper().sync_db().get_access_token()
-    buffer = Media().get(accessToken=accessToken, mediaId='1AmxZuHw5lRlem4Uzq32vaNcNXqgNAFivBtAswc0nE-yh6Sn7XSL1v3kO6FGhXFZ')
-    with open('a.png', 'w+b') as f:
+    buffer, image_type = Media().get(accessToken=accessToken, mediaId='1AmxZuHw5lRlem4Uzq32vaNcNXqgNAFivBtAswc0nE-yh6Sn7XSL1v3kO6FGhXFZ')
+    with open('a.' + image_type, 'w+b') as f:
         f.write(buffer)
