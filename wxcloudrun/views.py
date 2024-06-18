@@ -104,6 +104,7 @@ def reply_msg():
                         content = "Inbrace演示进行中……" + tip
                 else:
                     if demo and demo.demo == INBRACE_MSG:
+                        Inbrace(demo).handle(recMsg)
                         content = Inbrace(demo).handle(recMsg)
                     else:
                         content = GREETING

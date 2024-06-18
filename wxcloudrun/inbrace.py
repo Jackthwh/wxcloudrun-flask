@@ -52,6 +52,7 @@ class Inbrace():
             if not self.__current_thread:
                 return tip
             self.__open_ai.append_text_msg(self.__current_thread, recMsg.Content)
+            yield ""
             self.__open_ai.run_thread(self.__current_thread)
             return self.__open_ai.get_last_msg(self.__current_thread)
         else:

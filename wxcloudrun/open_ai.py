@@ -61,6 +61,7 @@ class OpenAIClient():
 
     def get_last_msg(self, thread):
         messages = self.__client.beta.threads.messages.list(thread_id=thread.id, order='asc')
+        logger.info(messages)
         return messages.data[-1].content[0].text.value
 
     def append_text_msg(self, thread, msg):
@@ -126,5 +127,6 @@ class OpenAIClient():
             event_handler=EventHandler(),
         ) as stream:
             stream.until_done()
+
 
         return self.get_last_msg(thread)
