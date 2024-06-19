@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 # filename: inbrace.py
 
-from time import sleep
+import logging
 from wxcloudrun.atoken import AccessTokenHelper
-from wxcloudrun.dao import delete_demobyuser, update_running_of_demo, update_thread_id_of_demo
+from wxcloudrun.customer_msg import CustomerMessage
+from wxcloudrun.dao import delete_demobyuser, update_thread_id_of_demo
 from wxcloudrun.media import Media
 from wxcloudrun.open_ai import OpenAIClient
+
+logger = logging.getLogger('inbrace')
 
 tip = "发送new开始一轮新对话，或者一张之前咨询过的图片来继续上一次的对话。"
 
@@ -52,15 +55,13 @@ class Inbrace():
         elif recMsg.MsgType == "text":
             if not self.__current_thread:
                 return tip
-            if self.__demo.running:
-                sleep(10)
-                return ""
             self.__open_ai.append_text_msg(self.__current_thread, recMsg.Content)
-            self.__demo.running = 1
-            update_running_of_demo(recMsg.FromUserName, self.__demo.running)
-            ret = self.__open_ai.run_thread(self.__current_thread)
-            self.__demo.running = 0
-            update_running_of_demo(recMsg.FromUserName, self.__demo.running)
-            return ret
+            accessToken = AccessTokenHelper().sync_db().get_access_token()
+            CustomerMessage(accessToken, recMsg.FromUserName, self).run()
+            logger.info("early return")
+            return ""
         else:
             return 'not implemented'
+
+    def run_thread(self):
+        return self.__open_ai.run_thread(self.__current_thread)

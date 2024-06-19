@@ -120,6 +120,7 @@ class OpenAIClient():
         return thread
 
     def run_thread(self, thread):
+        logger.info("start running thread...")
         with self.__client.beta.threads.runs.stream(
             thread_id=thread.id,
             assistant_id=self.__assistant.id,
@@ -129,4 +130,5 @@ class OpenAIClient():
             stream.until_done()
 
 
+        logger.info("running done. getting results...")
         return self.get_last_msg(thread)

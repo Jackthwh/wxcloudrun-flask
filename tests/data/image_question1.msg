@@ -1,6 +1,6 @@
 <xml>
-    <ToUserName><![CDATA[智慧泉源科技]]></ToUserName>
-    <FromUserName><![CDATA[Jack]]></FromUserName>
+    <ToUserName><![CDATA[智科]]></ToUserName>
+    <FromUserName><![CDATA[o3oDq6FpSX4Jjf8g-LZwjlI4Xgm8]]></FromUserName>
     <CreateTime>1718335908</CreateTime>
     <MsgType><![CDATA[image]]></MsgType>
     <MsgId>12345678</MsgId>

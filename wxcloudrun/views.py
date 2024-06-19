@@ -78,6 +78,7 @@ def get_count():
 @app.route('/wx', methods=['POST'])
 def reply_msg():
     try:
+        # TODO: verify sig
         webData = request.data # Note: empty when body is a form
         app.logger.info(f"post data: {webData}")
         recMsg = receive.parse_xml(webData)

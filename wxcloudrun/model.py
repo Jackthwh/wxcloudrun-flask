@@ -22,7 +22,6 @@ class Demos(db.Model): # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     user = db.Column(db.String)
     demo = db.Column(db.String)
-    running = db.Column(db.Integer)
     thread_id = db.Column(db.String)
     created_at = db.Column('createdAt', db.TIMESTAMP, nullable=False, default=datetime.now())
     updated_at = db.Column('updatedAt', db.TIMESTAMP, nullable=False, default=datetime.now())

@@ -24,7 +24,7 @@ def test_handle_new():
     msg = parse_xml(file_content)
 
     demo = Demos()
-    demo.user = 'Jack'
+    demo.user = 'o3oDq6FpSX4Jjf8g-LZwjlI4Xgm8'
     demo.demo = 'Inbrace'
     delete_demobyuser(demo.user)
     insert_demo(demo)
@@ -41,7 +41,7 @@ def test_handle_image_history():
     msg = parse_xml(file_content)
 
     demo = Demos()
-    demo.user = 'Jack'
+    demo.user = 'o3oDq6FpSX4Jjf8g-LZwjlI4Xgm8'
     demo.demo = 'Inbrace'
     delete_demobyuser(demo.user)
     insert_demo(demo)
@@ -66,7 +66,7 @@ def test_handle_question():
     msg = parse_xml(file_content)
 
     demo = Demos()
-    demo.user = 'Jack'
+    demo.user = 'o3oDq6FpSX4Jjf8g-LZwjlI4Xgm8'
     demo.demo = 'Inbrace'
     delete_demobyuser(demo.user)
     insert_demo(demo)
