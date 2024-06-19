@@ -1,4 +1,5 @@
 import base64
+from typing import List, Union, cast
 import uuid
 import io
 from typing_extensions import override
@@ -7,6 +8,11 @@ import logging
 from openai import OpenAI
 from openai import AssistantEventHandler
 # from openai.types.beta.threads.image_url_content_block_param import ImageURLContentBlockParam
+from openai.types.beta.threads import Text, TextDelta
+from openai.types.beta.threads.runs.tool_call import ToolCall
+from openai.types.beta.threads.message import Message
+from openai.types.beta.threads.runs.tool_call_delta import ToolCallDelta
+from openai.types.beta.thread import Thread
 from openai.types.beta.threads.image_file_content_block_param import ImageFileContentBlockParam
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from openai.types.beta.threads.image_file_content_block import ImageFileContentBlock
@@ -17,21 +23,21 @@ logger = logging.getLogger('open_ai')
 
 class EventHandler(AssistantEventHandler):
     @override
-    def on_text_created(self, text) -> None:
+    def on_text_created(self, text: Text) -> None:
         pass
 
     @override
-    def on_text_delta(self, delta, snapshot):
+    def on_text_delta(self, delta: TextDelta, snapshot: Text):
         pass
 
-    def on_tool_call_created(self, tool_call):
+    def on_tool_call_created(self, tool_call: ToolCall):
         pass
 
-    def on_tool_call_delta(self, delta, snapshot):
+    def on_tool_call_delta(self, delta: ToolCallDelta, snapshot: ToolCall):
         pass
 
     @override
-    def on_message_done(self, message) -> None:
+    def on_message_done(self, message: Message) -> None:
         pass
 
 
@@ -47,7 +53,7 @@ class OpenAIClient():
             assistant_id="asst_v44LfzODIBaA6yMjOq3L7T7q"
         )
 
-    def get_thread(self, thread_id):
+    def get_thread(self, thread_id: str) -> Thread:
         if thread_id:
             thread = self.__client.beta.threads.retrieve(thread_id=thread_id)
         else:
@@ -59,12 +65,13 @@ class OpenAIClient():
             )
         return thread
 
-    def get_last_msg(self, thread):
+    def get_last_msg(self, thread: Thread) -> str:
         messages = self.__client.beta.threads.messages.list(thread_id=thread.id, order='asc')
         logger.info(messages)
-        return messages.data[-1].content[0].text.value
+        content = cast(TextContentBlock, messages.data[-1].content[0])
+        return content.text.value
 
-    def append_text_msg(self, thread, msg):
+    def append_text_msg(self, thread: Thread, msg: str):
         self.__client.beta.threads.messages.create(
             thread_id=thread.id,
             role="user",
@@ -72,13 +79,14 @@ class OpenAIClient():
         )
 
     @staticmethod
-    def encode_image(image_content):
+    def encode_image(image_content: bytes) -> str:
         return base64.b64encode(image_content).decode('utf-8')
 
-    def append_image_msg(self, thread, image_content, image_type):
+    def append_image_msg(self, thread: Thread, image_content: bytes, image_type: str) -> None:
         message_file = self.__client.files.create(
             file=(str(uuid.uuid4()) + '.' + image_type, io.BytesIO(image_content)), purpose="vision"
         )
+
         # url = f"data:image/png;base64,{OpenAIClient.encode_image(image_content)}"
         self.__client.beta.threads.messages.create(
             thread_id=thread.id,
@@ -93,25 +101,22 @@ class OpenAIClient():
             ]
         )
 
-    def truncate_thread(self, thread):
-        messages = self.__client.beta.threads.messages.list(thread_id=thread.id, order='asc')
-        for i in range(4, len(messages.data)): #  hardcode for demo
-            self.__client.beta.threads.messages.delete(messages.data[i].id)
-
-    def dup_thread(self, thread):
+    def dup_thread(self, thread: Thread) -> Thread:
         messages = self.__client.beta.threads.messages.list(thread_id=thread.id, order='asc')
         thread = self.__client.beta.threads.create()
         for message in messages.data:
             content_obj = message.content[0]
+            content: Union[List[ImageFileContentBlockParam], str] = ''
             if isinstance(content_obj, TextContentBlock):
-                content = content_obj.text.value
+                 content = content_obj.text.value
             elif isinstance(content_obj, ImageFileContentBlock):
                 content = [ImageFileContentBlockParam(
-                    image_file=content_obj.image_file,
+                    image_file=ImageFileParam(
+                        file_id=content_obj.image_file.file_id
+                    ),
                     type='image_file',
                 )]
-            else:
-                content = ''
+
             self.__client.beta.threads.messages.create(
                 thread_id=thread.id,
                 role=message.role,
@@ -119,8 +124,9 @@ class OpenAIClient():
             )
         return thread
 
-    def run_thread(self, thread):
+    def run_thread(self, thread: Thread) -> str:
         logger.info("start running thread...")
+
         with self.__client.beta.threads.runs.stream(
             thread_id=thread.id,
             assistant_id=self.__assistant.id,
@@ -131,4 +137,4 @@ class OpenAIClient():
 
 
         logger.info("running done. getting results...")
-        return self.get_last_msg(thread)
+        return self.get_last_msg(thread=thread)

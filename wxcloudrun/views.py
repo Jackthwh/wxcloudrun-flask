@@ -1,12 +1,12 @@
 from datetime import datetime
 import traceback
 import hashlib
-from flask import render_template, request, g
+from flask import render_template, request
 from wxcloudrun import app
 from wxcloudrun.dao import delete_counterbyid, insert_demo, query_counterbyid, insert_counter, query_demobyuser, update_counterbyid, update_demobyuser
 from wxcloudrun.inbrace import Inbrace
 from wxcloudrun.model import Counters, Demos
-from wxcloudrun.response import make_succ_empty_response, make_succ_response, make_err_response, make_msg_response, make_text_response
+from wxcloudrun.response import make_succ_empty_response, make_succ_response, make_err_response, make_text_response
 from wxcloudrun import receive, reply
 import config
 
@@ -78,7 +78,15 @@ def get_count():
 @app.route('/wx', methods=['POST'])
 def reply_msg():
     try:
-        # TODO: verify sig
+        data = request.args
+        if len(data) == 0:
+            return make_text_response('signature is required.!')
+        signature = data['signature']
+        timestamp = data['timestamp']
+        nonce = data['nonce']
+        if check_signature(signature, timestamp, nonce):
+            return make_text_response('signature error!')
+
         webData = request.data # Note: empty when body is a form
         app.logger.info(f"post data: {webData}")
         recMsg = receive.parse_xml(webData)
@@ -87,7 +95,7 @@ def reply_msg():
             fromUser = recMsg.ToUserName
             if recMsg.MsgType == 'text':
                 tip = "你可以发送new开始一轮新对话，或者一张之前咨询过的图片来继续上一次的对话。"
-                demo = query_demobyuser(toUser)
+                demo = query_demobyuser(recMsg.FromUserName)
                 content = ""
                 if recMsg.Content == INBRACE_MSG:
                     if not demo:
@@ -112,7 +120,7 @@ def reply_msg():
                     return make_resp_msg(toUser, fromUser, content)
 
             elif recMsg.MsgType == 'image':
-                demo = query_demobyuser(toUser)
+                demo = query_demobyuser(recMsg.FromUserName)
                 if demo and demo.demo == INBRACE_MSG:
                     content = Inbrace(demo).handle(recMsg)
                 else:
@@ -122,14 +130,15 @@ def reply_msg():
                 return make_resp_msg(toUser, fromUser)
 
         elif isinstance(recMsg, receive.EventMsg):
-            toUser = recMsg.FromUserName
-            fromUser = recMsg.ToUserName
             content = "Not implemented"
             if recMsg.Event == 'CLICK':
                 if recMsg.Eventkey == 'mpGuide':
                     content = u"编写中，尚未完成".encode('utf-8')
 
+            toUser = recMsg.FromUserName
+            fromUser = recMsg.ToUserName
             return make_resp_msg(toUser, fromUser, content)
+
         else:
             app.logger.info("暂且不处理")
             return make_resp_msg(toUser, fromUser)
@@ -144,30 +153,31 @@ def get_wx():
     try:
         data = request.args
         if len(data) == 0:
-            return make_text_response('hello, this is handle view')
+            return make_text_response('signature is required.!')
         signature = data['signature']
         timestamp = data['timestamp']
         nonce = data['nonce']
         echostr = data['echostr']
-        token = config.wx_token
-
-        li = [token, timestamp, nonce]
-        li.sort()
-        sha1 = hashlib.sha1()
-        for s in li:
-            sha1.update(s.encode('utf-8'))
-        hashcode = sha1.hexdigest()
-        app.logger.info("handle/GET func: hashcode, signature: ", hashcode, signature)
-        msg = ''
-        if hashcode == signature:
-            msg = echostr
-        return make_text_response(msg)
+        if check_signature(signature, timestamp, nonce):
+            return make_text_response(echostr)
+        else:
+            return make_text_response("signature error!")
 
     except Exception as e:
         app.logger.error(e)
         return make_text_response("system error!")
 
-def make_resp_msg(toUser, fromUser, content="success"):
-    replyMsg = reply.TextMsg(toUser, fromUser, content)
-    msg = replyMsg.send()
-    return make_text_response(msg)
+def check_signature(signature: str, timestamp: str, nonce: str) -> bool:
+    token = config.wx_token
+
+    li = [token, timestamp, nonce]
+    li.sort()
+    sha1 = hashlib.sha1()
+    for s in li:
+        sha1.update(s.encode('utf-8'))
+    hashcode = sha1.hexdigest()
+    app.logger.info("handle/GET func: hashcode, signature: ", hashcode, signature)
+    return hashcode == signature
+
+def make_resp_msg(toUser: str, fromUser: str, content: str = "success"):
+    return make_text_response(reply.TextMsg(toUser, fromUser, content))
