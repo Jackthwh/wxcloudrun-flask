@@ -2,21 +2,22 @@
 # filename: media.py
 
 import logging
-import threading
-from time import sleep
 import requests # type: ignore
+import sys
+
+from wxcloudrun.atoken import AccessTokenHelper
+from wxcloudrun.dao import query_demobyuser
+from wxcloudrun.inbrace import Inbrace
+from wxcloudrun.views import INBRACE_MSG # type: ignore
 
 logger = logging.getLogger('customer_msg')
 
-class CustomerMessage(threading.Thread):
-    def __init__(self, accessToken, user, inbrace):
-        threading.Thread.__init__(self)
-        self.accessToken = accessToken
-        self.user = user
-        self.inbrace = inbrace
+class CustomerMessage():
+    def __init__(self):
+        pass
 
     def send(self, accessToken, user, content):
-        logger.info("sending customer message: " + content)
+        logger.warning("sending customer message: " + content)
         fields={
             "touser": user,
             "msgtype": "text",
@@ -36,7 +37,12 @@ class CustomerMessage(threading.Thread):
             logger.error(respJson)
         return
 
-    def run(self):
-        sleep(0)
-        content = self.inbrace.run_thread()
-        self.send(self.accessToken, self.user, content)
+user = sys.argv[1]
+
+accessToken = AccessTokenHelper().sync_db().get_access_token()
+demo = query_demobyuser(user)
+if demo and demo.demo == INBRACE_MSG and demo.thread_id:
+    content = Inbrace(demo).run_thread()
+    CustomerMessage().send(accessToken, user, content)
+else:
+    logger.error(f'wrong demo status: {demo}')

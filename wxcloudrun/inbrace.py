@@ -2,6 +2,7 @@
 # filename: inbrace.py
 
 import logging
+import subprocess
 from wxcloudrun.atoken import AccessTokenHelper
 from wxcloudrun.customer_msg import CustomerMessage
 from wxcloudrun.dao import delete_demobyuser, update_thread_id_of_demo
@@ -56,9 +57,8 @@ class Inbrace():
             if not self.__current_thread:
                 return tip
             self.__open_ai.append_text_msg(self.__current_thread, recMsg.Content)
-            accessToken = AccessTokenHelper().sync_db().get_access_token()
-            CustomerMessage(accessToken, recMsg.FromUserName, self).run()
-            logger.info("early return")
+            subprocess.run(f'python wxcloudrun/customer_msg.py {recMsg.FromUserName}', shell=True)
+            logger.warn("early return")
             return ""
         else:
             return 'not implemented'
