@@ -84,7 +84,7 @@ def reply_msg():
         signature = data['signature']
         timestamp = data['timestamp']
         nonce = data['nonce']
-        if check_signature(signature, timestamp, nonce):
+        if not check_signature(signature, timestamp, nonce):
             return make_text_response('signature error!')
 
         webData = request.data # Note: empty when body is a form
@@ -180,4 +180,4 @@ def check_signature(signature: str, timestamp: str, nonce: str) -> bool:
     return hashcode == signature
 
 def make_resp_msg(toUser: str, fromUser: str, content: str = "success"):
-    return make_text_response(reply.TextMsg(toUser, fromUser, content))
+    return make_text_response(reply.TextMsg(toUser, fromUser, content).to_xml())
