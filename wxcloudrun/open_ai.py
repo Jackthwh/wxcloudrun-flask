@@ -130,7 +130,10 @@ class OpenAIClient():
         with self.__client.beta.threads.runs.stream(
             thread_id=thread.id,
             assistant_id=self.__assistant.id,
-            instructions="Please address the user as Dr. Tong. The user has a premium account.",
+            instructions="""Please address the user as Dr. Tong. The user has a premium account.
+                Each answer should be less than 120 words.
+                Remind user if he/she didn't mention the time of the last treatment.
+            """,
             event_handler=EventHandler(),
         ) as stream:
             stream.until_done()

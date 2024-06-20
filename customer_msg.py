@@ -16,21 +16,20 @@ class CustomerMessage():
     def __init__(self):
         pass
 
-    def send(self, accessToken, user, content):
-        logger.warning("sending customer message: " + content)
+    def send(self, accessToken: str, user: str, content: str) -> None:
         fields={
             "touser": user,
             "msgtype": "text",
             "text":
             {
-                "content": content
+                "content": content[:600] # wechat limit
             }
         }
+        logger.warning(f"sending customer message: {fields}")
 
         postUrl = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=%s" % (
             accessToken)
-        urlResp = requests.post(postUrl, data=fields,
-                  headers={'Content-Type': 'application/json'})
+        urlResp = requests.post(postUrl, json=fields)
 
         respJson = urlResp.json()
         if respJson['errcode'] != 0:

@@ -40,7 +40,7 @@ class Inbrace():
         textMsg = cast(TextMsg, recMsg)
         imageMsg = cast(ImageMsg, recMsg)
         if recMsg.MsgType == "text" and textMsg.Content == "new":
-            self.__current_thread = self.__open_ai.get_thread(None)
+            self.__current_thread = self.__open_ai.get_thread('')
             assert self.__current_thread
             update_thread_id_of_demo(recMsg.FromUserName, self.__current_thread.id)
             return self.__open_ai.get_last_msg(self.__current_thread)
@@ -63,14 +63,17 @@ class Inbrace():
                 self.dup_predefined_thread()
                 assert self.__current_thread
                 update_thread_id_of_demo(recMsg.FromUserName, self.__current_thread.id)
-                return self.__open_ai.get_last_msg(self.__current_thread)
+                return "This is the last msg of previous session: " + self.__open_ai.get_last_msg(self.__current_thread)
 
         elif recMsg.MsgType == "text":
             if not self.__current_thread:
                 return tip
             self.__open_ai.append_text_msg(self.__current_thread, textMsg.Content)
             # async run openai thread and submit customer msg back
-            subprocess.Popen(f'cd $HOME/wxcloudrun-flask && source .venv/bin/activate && python customer_msg.py {textMsg.FromUserName}', shell=True)
+            subprocess.Popen(
+                f'cd $HOME/wxcloudrun-flask && source .venv/bin/activate && python customer_msg.py {textMsg.FromUserName} >> customer_msg.log',
+                shell=True,
+            )
             logger.warn("early return!")
             return ""
 
@@ -78,4 +81,5 @@ class Inbrace():
             return 'not implemented'
 
     def run_thread(self) -> str:
+        assert self.__current_thread
         return self.__open_ai.run_thread(self.__current_thread)

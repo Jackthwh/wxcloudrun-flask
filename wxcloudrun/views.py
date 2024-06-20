@@ -176,7 +176,7 @@ def check_signature(signature: str, timestamp: str, nonce: str) -> bool:
     for s in li:
         sha1.update(s.encode('utf-8'))
     hashcode = sha1.hexdigest()
-    app.logger.info("handle/GET func: hashcode, signature: ", hashcode, signature)
+    app.logger.info(f"handle/GET func: hashcode={hashcode}, signature={signature}")
     return hashcode == signature
 
 def make_resp_msg(toUser: str, fromUser: str, content: str = "success"):
